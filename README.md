@@ -63,7 +63,7 @@ Three models were developed using **tidymodels**:
 
 ## 📄 Full Report
 
-👉 [**Click here to view the full Quarto HTML report**](hivrisk.html)
+👉 [**Click here to view the full Quarto HTML report**](https://paolabeato.github.io/hivrisk-classifier/hivrisk.html)
 
 ---
 
