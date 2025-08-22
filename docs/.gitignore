@@ -1,0 +1,15 @@
+# Quarto/knitr caches
+*_cache/
+_freeze/
+
+# RStudio
+.Rhistory
+.RData
+.Rproj.user/
+
+# renv (keep renv.lock; ignore local libs)
+renv/library/
+renv/staging/
+
+# macOS
+.DS_Store
