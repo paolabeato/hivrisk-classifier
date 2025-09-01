@@ -17,8 +17,13 @@ This project applies machine learning techniques to predict HIV risk using a sim
 ## 🔍 Methods
 
 ### 1. Data Simulation & Cleaning
-- Behavioral and demographic variables (e.g., condom use, drug use, STI history)  
-- Categorical labels and factor levels added for interpretability  
+- Predictor generation: 5,000 individuals simulated with demographic (age, sex, education, race) and behavioral (number of partners, condom use, drug use, transactional sex, recent STI, PrEP awareness) features.
+
+- Distributions: variables drawn from appropriate distributions (e.g., age from truncated normal, partners from Poisson, categorical factors from multinomial probabilities reflecting realistic prevalences).
+
+- Outcome assignment: a probabilistic HIV risk group (“Low” vs. “High”) generated using rule-based logic informed by known epidemiologic risk factors (e.g., transactional sex, STI history, condom non-use, multiple partners), with random variation introduced to avoid deterministic labeling.
+
+- Cleaning & labeling: categorical variables converted to factors with descriptive labels, and variable labels added for interpretability in summary tables and model outputs.
 
 ### 2. Exploratory Data Analysis (EDA)
 - Visual comparisons of low vs. high-risk individuals  
