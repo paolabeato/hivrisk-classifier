@@ -11,7 +11,4431 @@
 <title>Predicting HIV Risk from Behavioral Data: A Machine Learning Workflow in R</title>
 <style>
 code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Paola Beato Fernández">
+
+<title>Predicting HIV Risk from Behavioral Data: A Machine Learning Workflow in R</title>
+<style>
+code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="hivrisk_files/libs/clipboard/clipboard.min.js"></script>
+<script src="hivrisk_files/libs/quarto-html/quarto.js"></script>
+<script src="hivrisk_files/libs/quarto-html/popper.min.js"></script>
+<script src="hivrisk_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="hivrisk_files/libs/quarto-html/anchor.min.js"></script>
+<link href="hivrisk_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="hivrisk_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="hivrisk_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="hivrisk_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="hivrisk_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#data-simulation-cleaning" id="toc-data-simulation-cleaning" class="nav-link" data-scroll-target="#data-simulation-cleaning">Data Simulation &amp; Cleaning</a></li>
+  <li><a href="#exploratory-data-analysis-eda" id="toc-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</a></li>
+  <li><a href="#modeling-approach" id="toc-modeling-approach" class="nav-link" data-scroll-target="#modeling-approach">Modeling Approach</a></li>
+  <li><a href="#model-tuning-and-evaluation" id="toc-model-tuning-and-evaluation" class="nav-link" data-scroll-target="#model-tuning-and-evaluation">Model Tuning and Evaluation</a></li>
+  </ul></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
+  <li><a href="#statistical-modeling" id="toc-statistical-modeling" class="nav-link" data-scroll-target="#statistical-modeling">Statistical Modeling</a>
+  <ul class="collapse">
+  <li><a href="#predictor-selection-1" id="toc-predictor-selection-1" class="nav-link" data-scroll-target="#predictor-selection-1">Predictor Selection</a></li>
+  <li><a href="#logistic-regression-model" id="toc-logistic-regression-model" class="nav-link" data-scroll-target="#logistic-regression-model">Logistic Regression Model</a></li>
+  <li><a href="#untuned-random-forest-model" id="toc-untuned-random-forest-model" class="nav-link" data-scroll-target="#untuned-random-forest-model">Untuned Random Forest Model</a></li>
+  <li><a href="#tuned-random-forest-model" id="toc-tuned-random-forest-model" class="nav-link" data-scroll-target="#tuned-random-forest-model">Tuned Random Forest Model</a></li>
+  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">Model Comparison</a></li>
+  </ul></li>
+  <li><a href="#summary-of-findings" id="toc-summary-of-findings" class="nav-link" data-scroll-target="#summary-of-findings">Summary of Findings</a></li>
+  <li><a href="#limitations-and-next-steps" id="toc-limitations-and-next-steps" class="nav-link" data-scroll-target="#limitations-and-next-steps">Limitations and Next Steps</a></li>
+  <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Predicting HIV Risk from Behavioral Data: A Machine Learning Workflow in R</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Paola Beato Fernández </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>This project demonstrates how machine learning techniques can be applied to behavioral and sociodemographic data to predict HIV risk. Using a simulated dataset of 5,000 individuals, we explore the relationship between known risk-related factors—such as condom use, drug use, and recent STI diagnosis—and the likelihood of being classified as high-risk. The goal is to build reproducible and interpretable predictive models while showcasing the end-to-end modeling pipeline: from data cleaning and exploratory analysis to feature selection and model evaluation.</p>
+</section>
+<section id="methods" class="level1">
+<h1>Methods</h1>
+<section id="data-simulation-cleaning" class="level3">
+<h3 class="anchored" data-anchor-id="data-simulation-cleaning">Data Simulation &amp; Cleaning</h3>
+<p>We constructed a synthetic dataset of 5,000 individuals to support machine learning analyses of HIV risk. Variables were generated to reflect demographic, behavioral, and biomedical characteristics commonly associated with HIV acquisition. The following features were simulated:</p>
+<ul>
+<li><p><strong>Age:</strong> drawn from a normal distribution (mean ≈ 39 years, SD ≈ 12), rounded to the nearest year, and truncated to fall between 18 and 59.</p></li>
+<li><p><strong>Sex:</strong> categorical with three levels (Male, Female, Other) assigned with probabilities 0.468, 0.435, and 0.097, respectively.</p></li>
+<li><p><strong>Education:</strong> five ordered categories (Less than high school, High school, Some college, Bachelor’s, Graduate) with probabilities 0.097, 0.305, 0.299, 0.198, and 0.101.</p></li>
+<li><p><strong>Race/Ethnicity:</strong> four categories (Black, White, Latinx, Other) with probabilities 0.285, 0.303, 0.313, and 0.100.</p></li>
+<li><p><strong>Number of Sexual Partners (past 6 months):</strong> sampled from a Poisson distribution (λ ≈ 3.0) with an upper cap of 11.</p></li>
+<li><p><strong>Condom Use (past 6 months):</strong> categorical (Always, Sometimes, Never) with probabilities 0.404, 0.394, and 0.202.</p></li>
+<li><p><strong>Drug Use (past 6 months):</strong> binary with prevalence 29.8%.</p></li>
+<li><p><strong>Transactional Sex (past year):</strong> binary with prevalence 9.5%.</p></li>
+<li><p><strong>Recent STI diagnosis (past 12 months):</strong> binary with prevalence 20.5%.</p></li>
+<li><p><strong>PrEP awareness:</strong> binary with prevalence 49.3%.</p></li>
+</ul>
+<p>A <strong>probabilistic outcome variable</strong> was then generated using a rule-based algorithm informed by epidemiologic evidence. Higher risk was assigned with elevated probability under combinations of risk factors, such as transactional sex with recent STI (90% chance of “High” risk), drug use with no condom use (90%), &gt;5 partners with no condom use (85%), or other overlapping criteria. Otherwise, the outcome was set to “Low” risk. Random draws (<code>runif</code>) were used at each decision step to ensure stochastic variation.</p>
+<p>Finally, all categorical variables were factorized with descriptive labels, and attributes were attached for downstream table generation and reporting. This approach produced a reproducible, labeled dataset with realistic distributions of HIV risk factors and a probabilistic outcome for model developm</p>
+</section>
+<section id="exploratory-data-analysis-eda" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</h3>
+<p>EDA was conducted to assess variable distributions and identify group differences between individuals classified as low versus high HIV risk. Summary tables were created using the <code>gtsummary</code> package, and visualizations were generated with <code>ggplot2</code>. Key behavioral predictors—such as condom use, number of sexual partners, drug use, and STI history—showed clear separation between risk groups.</p>
+</section>
+<section id="modeling-approach" class="level3">
+<h3 class="anchored" data-anchor-id="modeling-approach">Modeling Approach</h3>
+<p>Three classification models were developed using the <code>tidymodels</code> framework:</p>
+<ul>
+<li><p><strong>Logistic Regression</strong> — a baseline, interpretable model</p></li>
+<li><p><strong>Random Forest</strong> — a nonlinear, ensemble-based model</p></li>
+<li><p><strong>Tuned Random Forest</strong> — optimized via cross-validated hyperparameter tuning</p></li>
+</ul>
+<section id="data-preparation" class="level4">
+<h4 class="anchored" data-anchor-id="data-preparation">Data Preparation</h4>
+<p>The data was split into training (75%) and testing (25%) sets using stratified sampling to preserve HIV risk group proportions. A preprocessing recipe was applied to:</p>
+<ul>
+<li>A preprocessing recipe was applied, including:</li>
+<li>Dummy encoding of categorical predictors</li>
+<li>Log transformation of skewed count variables (e.g., number of partners)</li>
+<li>Removal of zero-variance predictors</li>
+<li>Normalization of numeric features</li>
+</ul>
+</section>
+<section id="predictor-selection" class="level4">
+<h4 class="anchored" data-anchor-id="predictor-selection">Predictor Selection</h4>
+<p>To focus modeling on the most informative features, information gain was computed for each predictor. The top 8 variables—primarily behavioral factors such as transactional sex, drug use, and condom use—were selected for inclusion in the models. These aligned well with known HIV risk factors.</p>
+</section>
+</section>
+<section id="model-tuning-and-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="model-tuning-and-evaluation">Model Tuning and Evaluation</h3>
+<p>The Random Forest model was tuned using 5-fold cross-validation across a grid of <code>mtry</code> and <code>min_n</code> values, optimizing for ROC AUC.</p>
+<p>All models were evaluated on the held-out test set using:</p>
+<ul>
+<li>Accuracy and Cohen’s Kappa (overall classification performance)</li>
+<li>Confusion matrices (Figures 6-9)</li>
+<li>Variable importance plots (Figures 8 &amp; 10)</li>
+<li>A combined ROC curve (Figure 11) to visualize and compare discrimination performance across all three models.</li>
+</ul>
+<p>The tuned random forest model achieved the highest ROC AUC and demonstrated superior balance in sensitivity and specificity, making it the strongest overall performer.</p>
+</section>
+</section>
+<section id="exploratory-data-analysis" class="level1">
+<h1>Exploratory Data Analysis</h1>
+<div class="cell">
+<div class="cell-output-display">
+<div id="zfwucugmfz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zfwucugmfz table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#zfwucugmfz thead, #zfwucugmfz tbody, #zfwucugmfz tfoot, #zfwucugmfz tr, #zfwucugmfz td, #zfwucugmfz th {
+  border-style: none;
+}
+
+#zfwucugmfz p {
+  margin: 0;
+  padding: 0;
+}
+
+#zfwucugmfz .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#zfwucugmfz .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#zfwucugmfz .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#zfwucugmfz .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#zfwucugmfz .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#zfwucugmfz .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#zfwucugmfz .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#zfwucugmfz .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#zfwucugmfz .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#zfwucugmfz .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#zfwucugmfz .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#zfwucugmfz .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#zfwucugmfz .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#zfwucugmfz .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#zfwucugmfz .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zfwucugmfz .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#zfwucugmfz .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#zfwucugmfz .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#zfwucugmfz .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zfwucugmfz .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#zfwucugmfz .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zfwucugmfz .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#zfwucugmfz .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zfwucugmfz .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zfwucugmfz .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zfwucugmfz .gt_left {
+  text-align: left;
+}
+
+#zfwucugmfz .gt_center {
+  text-align: center;
+}
+
+#zfwucugmfz .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#zfwucugmfz .gt_font_normal {
+  font-weight: normal;
+}
+
+#zfwucugmfz .gt_font_bold {
+  font-weight: bold;
+}
+
+#zfwucugmfz .gt_font_italic {
+  font-style: italic;
+}
+
+#zfwucugmfz .gt_super {
+  font-size: 65%;
+}
+
+#zfwucugmfz .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#zfwucugmfz .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#zfwucugmfz .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#zfwucugmfz .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#zfwucugmfz .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#zfwucugmfz .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#zfwucugmfz .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#zfwucugmfz .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#zfwucugmfz div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<caption><strong>Table 1. Sociodemographic and Behavioral Characteristics by HIV Risk Group</strong></caption>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="gt_col_headings header">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Variable</strong></th>
+<th id="stat_1" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>Low</strong><br>
+N = 3,522<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="stat_2" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>High</strong><br>
+N = 1,478<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Sex</td>
+<td class="gt_row gt_center" headers="stat_1"><br>
+</td>
+<td class="gt_row gt_center" headers="stat_2"><br>
+</td>
+<td class="gt_row gt_center" headers="p.value">0.9</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Male</td>
+<td class="gt_row gt_center" headers="stat_1">1,651 (47%)</td>
+<td class="gt_row gt_center" headers="stat_2">689 (47%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Female</td>
+<td class="gt_row gt_center" headers="stat_1">1,534 (44%)</td>
+<td class="gt_row gt_center" headers="stat_2">641 (43%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Other</td>
+<td class="gt_row gt_center" headers="stat_1">337 (9.6%)</td>
+<td class="gt_row gt_center" headers="stat_2">148 (10%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Age</td>
+<td class="gt_row gt_center" headers="stat_1">39 (12)</td>
+<td class="gt_row gt_center" headers="stat_2">38 (12)</td>
+<td class="gt_row gt_center" headers="p.value">0.4</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Race/Ethnicity</td>
+<td class="gt_row gt_center" headers="stat_1"><br>
+</td>
+<td class="gt_row gt_center" headers="stat_2"><br>
+</td>
+<td class="gt_row gt_center" headers="p.value">0.6</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Black</td>
+<td class="gt_row gt_center" headers="stat_1">1,006 (29%)</td>
+<td class="gt_row gt_center" headers="stat_2">418 (28%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;White</td>
+<td class="gt_row gt_center" headers="stat_1">1,048 (30%)</td>
+<td class="gt_row gt_center" headers="stat_2">466 (32%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Latinx</td>
+<td class="gt_row gt_center" headers="stat_1">1,108 (31%)</td>
+<td class="gt_row gt_center" headers="stat_2">456 (31%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Other</td>
+<td class="gt_row gt_center" headers="stat_1">360 (10%)</td>
+<td class="gt_row gt_center" headers="stat_2">138 (9.3%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Educational Attainment</td>
+<td class="gt_row gt_center" headers="stat_1"><br>
+</td>
+<td class="gt_row gt_center" headers="stat_2"><br>
+</td>
+<td class="gt_row gt_center" headers="p.value">0.9</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Less than HS</td>
+<td class="gt_row gt_center" headers="stat_1">347 (9.9%)</td>
+<td class="gt_row gt_center" headers="stat_2">136 (9.2%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;High School</td>
+<td class="gt_row gt_center" headers="stat_1">1,062 (30%)</td>
+<td class="gt_row gt_center" headers="stat_2">464 (31%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Some College</td>
+<td class="gt_row gt_center" headers="stat_1">1,059 (30%)</td>
+<td class="gt_row gt_center" headers="stat_2">437 (30%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Bachelor</td>
+<td class="gt_row gt_center" headers="stat_1">696 (20%)</td>
+<td class="gt_row gt_center" headers="stat_2">296 (20%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Graduate</td>
+<td class="gt_row gt_center" headers="stat_1">358 (10%)</td>
+<td class="gt_row gt_center" headers="stat_2">145 (9.8%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Number of Sexual Partners in the Past 6 Months</td>
+<td class="gt_row gt_center" headers="stat_1">2.71 (1.60)</td>
+<td class="gt_row gt_center" headers="stat_2">3.70 (1.78)</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Condom Use in the Past 6 Months</td>
+<td class="gt_row gt_center" headers="stat_1"><br>
+</td>
+<td class="gt_row gt_center" headers="stat_2"><br>
+</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Always</td>
+<td class="gt_row gt_center" headers="stat_1">1,596 (45%)</td>
+<td class="gt_row gt_center" headers="stat_2">425 (29%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Sometimes</td>
+<td class="gt_row gt_center" headers="stat_1">1,334 (38%)</td>
+<td class="gt_row gt_center" headers="stat_2">634 (43%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Never</td>
+<td class="gt_row gt_center" headers="stat_1">592 (17%)</td>
+<td class="gt_row gt_center" headers="stat_2">419 (28%)</td>
+<td class="gt_row gt_center" headers="p.value"><br>
+</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Drug Use in the Past 6 Months</td>
+<td class="gt_row gt_center" headers="stat_1">677 (19%)</td>
+<td class="gt_row gt_center" headers="stat_2">813 (55%)</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">Transactional Sex in the Past Year</td>
+<td class="gt_row gt_center" headers="stat_1">85 (2.4%)</td>
+<td class="gt_row gt_center" headers="stat_2">390 (26%)</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">STI Diagnosis in the Past 12 months</td>
+<td class="gt_row gt_center" headers="stat_1">570 (16%)</td>
+<td class="gt_row gt_center" headers="stat_2">455 (31%)</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label" style="font-weight: bold">PrEP Awareness</td>
+<td class="gt_row gt_center" headers="stat_1">1,749 (50%)</td>
+<td class="gt_row gt_center" headers="stat_2">714 (48%)</td>
+<td class="gt_row gt_center" headers="p.value">0.4</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="odd">
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> n (%); Mean (SD)</td>
+</tr>
+<tr class="even">
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span> Pearson’s Chi-squared test; Wilcoxon rank sum test</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>The table summarizes key demographic and behavioral predictors by HIV risk group. Most sociodemographic variables (sex, age, race, education) showed no statistically significant differences between risk groups (p &gt; 0.05), suggesting relatively balanced distribution across these characteristics.</p>
+<p>However, behavioral factors were significantly associated with HIV risk:</p>
+<ul>
+<li><p>Individuals in the high-risk group reported a greater number of sexual partners on average (3.7 vs.&nbsp;2.7, <em>p</em> &lt; 0.001).</p></li>
+<li><p>High-risk individuals were more likely to report never using condoms, engaging in drug use, participating in transactional sex, and having a recent STI (<em>p</em> &lt; 0.001 for all).</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Condom use behavior strongly differentiates risk groups:</p>
+<ul>
+<li><p>Among those who never used condoms, nearly 40% were classified as high risk, compared to just ~20% among those who always used condoms.</p></li>
+<li><p>Risk increases progressively from “Always” → “Sometimes” → “Never,” reinforcing the importance of consistent condom use in HIV prevention.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There was no meaningful difference in age distribution between high and low HIV risk groups:</p>
+<ul>
+<li><p>Median age was comparable (Low = 39, High = 38).</p></li>
+<li><p>This suggests that age alone is not a strong differentiator of risk in this sample.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Race/ethnicity was not strongly associated with HIV risk in the simulated data. The proportion of individuals at high risk was relatively uniform across Black, White, Latinx, and Other racial groups.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This faceted plot reinforces key behavioral distinctions:</p>
+<ul>
+<li><p>Drug use and recent STI history were much more common in the high-risk group (~55% vs.&nbsp;~19% and ~31% vs.&nbsp;~16%, respectively).</p></li>
+<li><p>Transactional sex showed one of the starkest divides, with 26% of high-risk individuals engaging in it versus just 2% in the low-risk group.</p></li>
+<li><p>PrEP awareness, in contrast, did not differ substantially between groups—highlighting a potential missed prevention opportunity.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li><p>Age distributions again appear similar between groups, reinforcing earlier findings.</p></li>
+<li><p>The distribution of number of sexual partners shows a clear rightward skew in the high-risk group, with more individuals reporting 5+ partners.</p></li>
+</ul>
+</section>
+<section id="statistical-modeling" class="level1">
+<h1>Statistical Modeling</h1>
+<section id="predictor-selection-1" class="level2">
+<h2 class="anchored" data-anchor-id="predictor-selection-1">Predictor Selection</h2>
+<p>To identify the most informative features for predicting HIV risk, information gain was computed for each variable. The top predictors included behavioral risk factors:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="klmxlkksew" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#klmxlkksew table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#klmxlkksew thead, #klmxlkksew tbody, #klmxlkksew tfoot, #klmxlkksew tr, #klmxlkksew td, #klmxlkksew th {
+  border-style: none;
+}
+
+#klmxlkksew p {
+  margin: 0;
+  padding: 0;
+}
+
+#klmxlkksew .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#klmxlkksew .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#klmxlkksew .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#klmxlkksew .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#klmxlkksew .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#klmxlkksew .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#klmxlkksew .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#klmxlkksew .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#klmxlkksew .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#klmxlkksew .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#klmxlkksew .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#klmxlkksew .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#klmxlkksew .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#klmxlkksew .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#klmxlkksew .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#klmxlkksew .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#klmxlkksew .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#klmxlkksew .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#klmxlkksew .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#klmxlkksew .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#klmxlkksew .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#klmxlkksew .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#klmxlkksew .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#klmxlkksew .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#klmxlkksew .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#klmxlkksew .gt_left {
+  text-align: left;
+}
+
+#klmxlkksew .gt_center {
+  text-align: center;
+}
+
+#klmxlkksew .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#klmxlkksew .gt_font_normal {
+  font-weight: normal;
+}
+
+#klmxlkksew .gt_font_bold {
+  font-weight: bold;
+}
+
+#klmxlkksew .gt_font_italic {
+  font-style: italic;
+}
+
+#klmxlkksew .gt_super {
+  font-size: 65%;
+}
+
+#klmxlkksew .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#klmxlkksew .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#klmxlkksew .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#klmxlkksew .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#klmxlkksew .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#klmxlkksew .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#klmxlkksew .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#klmxlkksew .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#klmxlkksew div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 2. Top Predictors Based on Information Gain</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Variable" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Variable</th>
+<th id="Importance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Importance</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Variable">Transactional Sex</td>
+<td class="gt_row gt_right" headers="Importance">0.063</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Variable">Drug Use</td>
+<td class="gt_row gt_right" headers="Importance">0.061</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Variable">Number of Partners</td>
+<td class="gt_row gt_right" headers="Importance">0.046</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Variable">Condom Use</td>
+<td class="gt_row gt_right" headers="Importance">0.015</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Variable">Recent STI</td>
+<td class="gt_row gt_right" headers="Importance">0.013</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Variable">Race/Ethnicity</td>
+<td class="gt_row gt_right" headers="Importance">0.000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Variable">Education</td>
+<td class="gt_row gt_right" headers="Importance">0.000</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Variable">PrEP Awareness</td>
+<td class="gt_row gt_right" headers="Importance">0.000</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<ul>
+<li><p>Transactional sex and drug use showed the highest information gain, followed by number of partners, condom use, and recent STI.</p></li>
+<li><p>Sociodemographic variables (e.g., race, education, PrEP awareness) contributed little to prediction in this synthetic dataset.</p></li>
+</ul>
+</section>
+<section id="logistic-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="logistic-regression-model">Logistic Regression Model</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fvabtpagcp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#fvabtpagcp table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#fvabtpagcp thead, #fvabtpagcp tbody, #fvabtpagcp tfoot, #fvabtpagcp tr, #fvabtpagcp td, #fvabtpagcp th {
+  border-style: none;
+}
+
+#fvabtpagcp p {
+  margin: 0;
+  padding: 0;
+}
+
+#fvabtpagcp .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#fvabtpagcp .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#fvabtpagcp .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#fvabtpagcp .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#fvabtpagcp .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#fvabtpagcp .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#fvabtpagcp .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#fvabtpagcp .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#fvabtpagcp .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#fvabtpagcp .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#fvabtpagcp .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fvabtpagcp .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#fvabtpagcp .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#fvabtpagcp .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#fvabtpagcp .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvabtpagcp .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#fvabtpagcp .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#fvabtpagcp .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#fvabtpagcp .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvabtpagcp .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#fvabtpagcp .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvabtpagcp .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#fvabtpagcp .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvabtpagcp .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fvabtpagcp .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvabtpagcp .gt_left {
+  text-align: left;
+}
+
+#fvabtpagcp .gt_center {
+  text-align: center;
+}
+
+#fvabtpagcp .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#fvabtpagcp .gt_font_normal {
+  font-weight: normal;
+}
+
+#fvabtpagcp .gt_font_bold {
+  font-weight: bold;
+}
+
+#fvabtpagcp .gt_font_italic {
+  font-style: italic;
+}
+
+#fvabtpagcp .gt_super {
+  font-size: 65%;
+}
+
+#fvabtpagcp .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#fvabtpagcp .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#fvabtpagcp .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#fvabtpagcp .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#fvabtpagcp .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#fvabtpagcp .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#fvabtpagcp .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#fvabtpagcp .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#fvabtpagcp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 3. Logistic Regression Model Performance</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Metric" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Metric</th>
+<th id="Value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Value</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Metric">Accuracy</td>
+<td class="gt_row gt_right" headers="Value">83.5%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Metric">Cohen's Kappa</td>
+<td class="gt_row gt_right" headers="Value">58.8%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The logistic regression model achieved an accuracy of 83.5% and a Cohen’s Kappa of 58.8%, indicating substantial agreement beyond chance in classifying individuals as high or low HIV risk. The model achieved an ROC AUC of 10.0%, indicating good discriminative ability in distinguishing between low and high-risk individuals.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The confusion matrix provides more granular insight:</p>
+<ul>
+<li><p>True Negatives (Low risk correctly classified): 800</p></li>
+<li><p>False Positives (Low risk misclassified as high): 126</p></li>
+<li><p>False Negatives (High risk misclassified as low): 81</p></li>
+<li><p>True Positives (High risk correctly classified): 244</p></li>
+</ul>
+<p>The model is slightly more likely to misclassify low-risk individuals as high-risk (Type I error) than to miss high-risk individuals (Type II error). This may be preferable in public health settings where false negatives (missed high-risk individuals) carry greater consequences than false positives.</p>
+<p>Overall, the model demonstrates solid performance and could be a useful screening tool for identifying individuals at elevated HIV risk based on behavioral and demographic indicators.</p>
+</section>
+<section id="untuned-random-forest-model" class="level2">
+<h2 class="anchored" data-anchor-id="untuned-random-forest-model">Untuned Random Forest Model</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div id="dfglbxjfgo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dfglbxjfgo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#dfglbxjfgo thead, #dfglbxjfgo tbody, #dfglbxjfgo tfoot, #dfglbxjfgo tr, #dfglbxjfgo td, #dfglbxjfgo th {
+  border-style: none;
+}
+
+#dfglbxjfgo p {
+  margin: 0;
+  padding: 0;
+}
+
+#dfglbxjfgo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#dfglbxjfgo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#dfglbxjfgo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#dfglbxjfgo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#dfglbxjfgo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#dfglbxjfgo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#dfglbxjfgo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#dfglbxjfgo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#dfglbxjfgo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#dfglbxjfgo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#dfglbxjfgo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#dfglbxjfgo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#dfglbxjfgo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#dfglbxjfgo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#dfglbxjfgo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dfglbxjfgo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#dfglbxjfgo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#dfglbxjfgo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#dfglbxjfgo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dfglbxjfgo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#dfglbxjfgo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dfglbxjfgo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#dfglbxjfgo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dfglbxjfgo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dfglbxjfgo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dfglbxjfgo .gt_left {
+  text-align: left;
+}
+
+#dfglbxjfgo .gt_center {
+  text-align: center;
+}
+
+#dfglbxjfgo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#dfglbxjfgo .gt_font_normal {
+  font-weight: normal;
+}
+
+#dfglbxjfgo .gt_font_bold {
+  font-weight: bold;
+}
+
+#dfglbxjfgo .gt_font_italic {
+  font-style: italic;
+}
+
+#dfglbxjfgo .gt_super {
+  font-size: 65%;
+}
+
+#dfglbxjfgo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#dfglbxjfgo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#dfglbxjfgo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#dfglbxjfgo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#dfglbxjfgo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#dfglbxjfgo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#dfglbxjfgo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#dfglbxjfgo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#dfglbxjfgo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 4. Random Forest Model Performance</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Metric" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Metric</th>
+<th id="Value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Value</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Metric">Accuracy</td>
+<td class="gt_row gt_right" headers="Value">87.9%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Metric">Cohen's Kappa</td>
+<td class="gt_row gt_right" headers="Value">70.1%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The random forest classifier outperformed the logistic regression model, with an accuracy of 87.9% and a Cohen’s Kappa of 70.1%, indicating strong agreement between predictions and true labels. The ROC AUC for this model was 5.4%, reflecting stronger discriminative power than the logistic model.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The confusion matrix shows improved classification across both groups:</p>
+<ul>
+<li><p>True Negatives (Low risk correctly classified): 825</p></li>
+<li><p>False Positives (Low risk misclassified as high): 95</p></li>
+<li><p>False Negatives (High risk misclassified as low): 56</p></li>
+<li><p>True Positives (High risk correctly classified): 275</p></li>
+</ul>
+<p>This model shows higher sensitivity and specificity than logistic regression, with fewer false classifications overall. Particularly, it reduced false negatives — a critical improvement in public health surveillance of HIV risk.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The top predictors of high HIV risk include:</p>
+<ul>
+<li><p>Number of sexual partners</p></li>
+<li><p>Drug use</p></li>
+<li><p>Transactional sex</p></li>
+<li><p>Recent STI history</p></li>
+<li><p>Condom use frequency</p></li>
+</ul>
+<p>These align with established risk factors and confirm that the model is not only accurate but also clinically sensible.</p>
+</section>
+<section id="tuned-random-forest-model" class="level2">
+<h2 class="anchored" data-anchor-id="tuned-random-forest-model">Tuned Random Forest Model</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div id="qcbgniipet" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qcbgniipet table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qcbgniipet thead, #qcbgniipet tbody, #qcbgniipet tfoot, #qcbgniipet tr, #qcbgniipet td, #qcbgniipet th {
+  border-style: none;
+}
+
+#qcbgniipet p {
+  margin: 0;
+  padding: 0;
+}
+
+#qcbgniipet .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qcbgniipet .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qcbgniipet .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qcbgniipet .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qcbgniipet .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qcbgniipet .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qcbgniipet .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qcbgniipet .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qcbgniipet .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qcbgniipet .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qcbgniipet .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qcbgniipet .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qcbgniipet .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qcbgniipet .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qcbgniipet .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qcbgniipet .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qcbgniipet .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qcbgniipet .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qcbgniipet .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qcbgniipet .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qcbgniipet .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qcbgniipet .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qcbgniipet .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qcbgniipet .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qcbgniipet .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qcbgniipet .gt_left {
+  text-align: left;
+}
+
+#qcbgniipet .gt_center {
+  text-align: center;
+}
+
+#qcbgniipet .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qcbgniipet .gt_font_normal {
+  font-weight: normal;
+}
+
+#qcbgniipet .gt_font_bold {
+  font-weight: bold;
+}
+
+#qcbgniipet .gt_font_italic {
+  font-style: italic;
+}
+
+#qcbgniipet .gt_super {
+  font-size: 65%;
+}
+
+#qcbgniipet .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qcbgniipet .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qcbgniipet .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qcbgniipet .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qcbgniipet .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qcbgniipet .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qcbgniipet .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qcbgniipet .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qcbgniipet div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="3" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 5. Best Tuning Parameters for Tuned Random Forest Model</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Features-per-Split" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Features per Split</th>
+<th id="Minimum-Node-Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Minimum Node Size</th>
+<th id="Mean-ROC-AUC" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Mean ROC AUC</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="Features per Split">4</td>
+<td class="gt_row gt_right" headers="Minimum Node Size">10</td>
+<td class="gt_row gt_right" headers="Mean ROC AUC">0.935</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Optimal hyperparameters were selected through grid search and 5-fold cross-validation. The best-performing configuration involved:</p>
+<ul>
+<li><p>4 features per split (<code>mtry = 4</code>)</p></li>
+<li><p>Minimum node size of 10 (<code>min_n = 10</code>)</p></li>
+<li><p>A mean ROC AUC of 0.942, indicating excellent discriminatory power.</p></li>
+</ul>
+<p>These parameters strike a balance between model complexity and overfitting, yielding robust performance across folds.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="efxjsgjdtj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#efxjsgjdtj table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#efxjsgjdtj thead, #efxjsgjdtj tbody, #efxjsgjdtj tfoot, #efxjsgjdtj tr, #efxjsgjdtj td, #efxjsgjdtj th {
+  border-style: none;
+}
+
+#efxjsgjdtj p {
+  margin: 0;
+  padding: 0;
+}
+
+#efxjsgjdtj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#efxjsgjdtj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#efxjsgjdtj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#efxjsgjdtj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#efxjsgjdtj .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#efxjsgjdtj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#efxjsgjdtj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#efxjsgjdtj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#efxjsgjdtj .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#efxjsgjdtj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#efxjsgjdtj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#efxjsgjdtj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#efxjsgjdtj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#efxjsgjdtj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#efxjsgjdtj .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#efxjsgjdtj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#efxjsgjdtj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#efxjsgjdtj .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#efxjsgjdtj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#efxjsgjdtj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#efxjsgjdtj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#efxjsgjdtj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#efxjsgjdtj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#efxjsgjdtj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#efxjsgjdtj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#efxjsgjdtj .gt_left {
+  text-align: left;
+}
+
+#efxjsgjdtj .gt_center {
+  text-align: center;
+}
+
+#efxjsgjdtj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#efxjsgjdtj .gt_font_normal {
+  font-weight: normal;
+}
+
+#efxjsgjdtj .gt_font_bold {
+  font-weight: bold;
+}
+
+#efxjsgjdtj .gt_font_italic {
+  font-style: italic;
+}
+
+#efxjsgjdtj .gt_super {
+  font-size: 65%;
+}
+
+#efxjsgjdtj .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#efxjsgjdtj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#efxjsgjdtj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#efxjsgjdtj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#efxjsgjdtj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#efxjsgjdtj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#efxjsgjdtj .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#efxjsgjdtj .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#efxjsgjdtj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 6. Tuned Random Forest Model Performance</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Metric" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Metric</th>
+<th id="Value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Value</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Metric">Accuracy</td>
+<td class="gt_row gt_right" headers="Value">87.8%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Metric">Cohen's Kappa</td>
+<td class="gt_row gt_right" headers="Value">70.4%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>After tuning, the Random Forest model:</p>
+<ul>
+<li><p>Achieved 85.7% accuracy — a slight tradeoff from 87.9% — reflects improved generalizability and reduced overfitting due to tuning.</p></li>
+<li><p>Reached a Cohen’s Kappa of 64.2%, indicating strong agreement between predicted and true risk classifications.</p></li>
+<li><p>Demonstrated the highest discriminative performance, with a test set ROC AUC of 5.5%, outperforming both the Untuned Random Forest and Logistic Regression models.</p></li>
+<li><p>Showed strong overall effectiveness in identifying individuals at elevated HIV risk based on behavioral and demographic factors.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The confusion matrix highlights the model’s performance across actual and predicted classes:</p>
+<ul>
+<li>High-risk individuals (n = 325):
+<ul>
+<li>254 correctly identified (true positives)</li>
+<li>71 misclassified as low risk (false negatives) → Sensitivity ≈ 78.2%</li>
+</ul></li>
+<li>Low-risk individuals (n = 926):
+<ul>
+<li>817 correctly identified (true negatives)</li>
+<li>109 misclassified as high risk (false positives) → Specificity ≈ 88.3%</li>
+</ul></li>
+</ul>
+<p>The model shows strong balance, favoring minimal false negatives—a key priority in public health screening.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/figure10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The top predictors driving model decisions, based on impurity-based importance, were:</p>
+<ol type="1">
+<li><p>Drug Use</p></li>
+<li><p>Number of Partners</p></li>
+<li><p>Transactional Sex</p></li>
+<li><p>Recent STI</p></li>
+<li><p>Condom Use</p></li>
+</ol>
+<p>These findings are consistent with prior domain knowledge and EDA results, reaffirming that behavioral risk factors are stronger predictors of HIV risk than sociodemographic variables. Notably, PrEP awareness, while important conceptually, played a minimal role in predictive performance within this dataset.</p>
+</section>
+<section id="model-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="model-comparison">Model Comparison</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div id="dtpkerisjc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dtpkerisjc table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#dtpkerisjc thead, #dtpkerisjc tbody, #dtpkerisjc tfoot, #dtpkerisjc tr, #dtpkerisjc td, #dtpkerisjc th {
+  border-style: none;
+}
+
+#dtpkerisjc p {
+  margin: 0;
+  padding: 0;
+}
+
+#dtpkerisjc .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#dtpkerisjc .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#dtpkerisjc .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#dtpkerisjc .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#dtpkerisjc .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#dtpkerisjc .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#dtpkerisjc .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#dtpkerisjc .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#dtpkerisjc .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#dtpkerisjc .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#dtpkerisjc .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#dtpkerisjc .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#dtpkerisjc .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#dtpkerisjc .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#dtpkerisjc .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dtpkerisjc .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#dtpkerisjc .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#dtpkerisjc .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#dtpkerisjc .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dtpkerisjc .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#dtpkerisjc .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dtpkerisjc .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#dtpkerisjc .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dtpkerisjc .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dtpkerisjc .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dtpkerisjc .gt_left {
+  text-align: left;
+}
+
+#dtpkerisjc .gt_center {
+  text-align: center;
+}
+
+#dtpkerisjc .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#dtpkerisjc .gt_font_normal {
+  font-weight: normal;
+}
+
+#dtpkerisjc .gt_font_bold {
+  font-weight: bold;
+}
+
+#dtpkerisjc .gt_font_italic {
+  font-style: italic;
+}
+
+#dtpkerisjc .gt_super {
+  font-size: 65%;
+}
+
+#dtpkerisjc .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#dtpkerisjc .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#dtpkerisjc .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#dtpkerisjc .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#dtpkerisjc .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#dtpkerisjc .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#dtpkerisjc .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#dtpkerisjc .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#dtpkerisjc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="4" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Table 7. Model Performance Comparison</strong></th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="Model" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Model</th>
+<th id="Accuracy" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Accuracy</th>
+<th id="Kappa" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Cohen’s Kappa</th>
+<th id="AUC" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">ROC AUC</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Model">Logistic Regression</td>
+<td class="gt_row gt_right" headers="Accuracy">83.5%</td>
+<td class="gt_row gt_right" headers="Kappa">58.8%</td>
+<td class="gt_row gt_right" headers="AUC">10.0%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Model">Random Forest</td>
+<td class="gt_row gt_right" headers="Accuracy">87.9%</td>
+<td class="gt_row gt_right" headers="Kappa">70.1%</td>
+<td class="gt_row gt_right" headers="AUC">5.4%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Model">Tuned Random Forest</td>
+<td class="gt_row gt_right" headers="Accuracy">87.8%</td>
+<td class="gt_row gt_right" headers="Kappa">70.4%</td>
+<td class="gt_row gt_right" headers="AUC">5.5%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>All models were evaluated on the same held-out test set, ensuring fair comparison.</p>
+<p>The Tuned Random Forest model achieved the highest accuracy (86.1%) and Cohen’s Kappa (64.9%), indicating the strongest agreement between predicted and true HIV risk classifications.</p>
+<p>While the Untuned Random Forest performed similarly (85.9% accuracy, 63.8% Kappa), hyperparameter tuning slightly improved performance. Logistic Regression remained a viable baseline (80.7% accuracy) but lagged in agreement (50.2% Kappa), reflecting its limited ability to capture complex, nonlinear patterns.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hivrisk_files/figure-html/model-comparison2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This ROC curve visualizes and compares the classification performance of the three models across all decision thresholds:</p>
+<ul>
+<li><p>Tuned Random Forest (orange) shows the strongest performance overall, maintaining the greatest distance from the diagonal (chance line), particularly at high sensitivity and low false positive rates. → This indicates the best balance between true positives and false positives.</p></li>
+<li><p>Untuned Random Forest (green) also performs well but slightly underperforms the tuned version, especially in the mid-sensitivity range. → Tuning improves model calibration and discrimination.</p></li>
+<li><p>Logistic Regression (blue) demonstrates the lowest ROC AUC among the three models, reflecting weaker discriminative performance. → While still effective, its linear structure limits its ability to capture nonlinear interactions between behavioral predictors.</p></li>
+</ul>
+</section>
+</section>
+<section id="summary-of-findings" class="level1">
+<h1>Summary of Findings</h1>
+<p>This project explored the application of machine learning methods to predict HIV risk using a simulated dataset of 5,000 individuals. After cleaning, exploratory analysis, and predictor selection, three classification models were developed:</p>
+<ul>
+<li><p>Logistic Regression</p></li>
+<li><p>Untuned Random Forest</p></li>
+<li><p>Tuned Random Forest (via cross-validated hyperparameter tuning)</p></li>
+</ul>
+<p>Key findings:</p>
+<ul>
+<li><p>Behavioral risk factors such as transactional sex, drug use, number of partners, condom use, and STI history were the strongest predictors of HIV risk. Sociodemographic variables contributed minimally to model performance.</p></li>
+<li><p>The Tuned Random Forest model outperformed all others, achieving the highest ROC AUC (5.5%), along with strong accuracy (85.7%) and balanced sensitivity and specificity.</p></li>
+<li><p>The Untuned Random Forest also performed well (87.9% accuracy), but tuning improved calibration and generalizability by reducing overfitting.</p></li>
+<li><p>Logistic Regression, while interpretable and decently accurate (83.5%), was less capable of capturing nonlinear interactions between predictors.</p></li>
+</ul>
+<p>The results demonstrate that tree-based models, especially when tuned, are well-suited for public health classification tasks involving behavioral data.</p>
+</section>
+<section id="limitations-and-next-steps" class="level1">
+<h1>Limitations and Next Steps</h1>
+<p>Despite the strong performance of the models, several limitations are worth noting:</p>
+<ol type="1">
+<li><strong>Simulated Data</strong></li>
+</ol>
+<ul>
+<li><p>The dataset was synthetically generated, which limits the generalizability of findings to real-world populations.</p></li>
+<li><p>Patterns observed may not reflect actual behavioral distributions or prevalence rates in HIV surveillance data.</p></li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Limited Feature Engineering</strong></li>
+</ol>
+<ul>
+<li>Feature creation was limited to existing variables; in real applications, temporal features, interaction terms, or longitudinal behavior tracking might further improve performance.</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>No Cost-Sensitive Optimization</strong></li>
+</ol>
+<ul>
+<li>All models optimized for overall accuracy and ROC AUC. In public health settings, minimizing false negatives may be more critical. Future work could explore cost-sensitive learning or threshold adjustment to prioritize sensitivity.</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Binary Outcome</strong></li>
+</ol>
+<ul>
+<li>The binary HIV risk outcome (low vs.&nbsp;high) simplifies a continuum of risk. More granular outcomes (e.g., risk scores or tiers) might allow for better intervention targeting.</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Interpretability vs.&nbsp;Performance Tradeoff</strong></li>
+</ol>
+<ul>
+<li>While Random Forests provided higher accuracy, they sacrifice interpretability. Bridging this gap using model explainability techniques (e.g., SHAP values, partial dependence plots) could enhance trust and adoption in clinical settings.</li>
+</ul>
+</section>
+<section id="reproducibility" class="level1">
+<h1>Reproducibility</h1>
+<p>All analysis was conducted in R using the <code>tidymodels</code> ecosystem and rendered with <code>Quarto</code>. The project is fully reproducible and available upon request.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
 div.columns{display: flex; gap: min(4vw, 1.5em);}
 div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
